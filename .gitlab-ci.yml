@@ -29,7 +29,7 @@ build:
     - echo "Pushing image..."
     - docker push $REPOSITORY_URL:latest
   only: 
-    - master 
+    - main
 
 test: 
   stage: test 
@@ -38,7 +38,14 @@ test:
   dependencies:
     - build 
   only:
-    - master 
+    - main
+
+release:
+  stage: release 
+  script: 
+    - echo "Release To Heroku!"
+  only:
+    - main
 
 deploy: 
   stage: deploy 
@@ -50,4 +57,4 @@ deploy:
   dependencies:
     - test
   only: 
-    - master 
+    - main
