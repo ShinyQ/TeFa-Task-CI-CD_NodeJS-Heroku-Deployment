@@ -1,0 +1,53 @@
+image: docker:latest
+
+variables:
+  REPOSITORY_URL: shinyq11/tefa-node-cicd
+  IMAGE_TAG: latest 
+
+services: 
+  - docker:dind
+
+before_script:
+  - echo "welcome"
+
+stages:
+  - build
+  - test 
+  - release
+  - deploy
+
+build: 
+  stage: build
+  script:
+    - docker login --username=$DOCKER_USERNAME --password=$DOCKER_PASSWORD
+    - echo "Building image..."
+    - docker build
+      -t node-be-cicd:latest
+      --no-cache .
+    - echo "Tagging image..."
+    - docker tag node-be-cicd:latest $REPOSITORY_URL:latest 
+    - echo "Pushing image..."
+    - docker push $REPOSITORY_URL:latest
+  only: 
+    - master 
+
+test: 
+  stage: test 
+  script: 
+    - echo "Test"
+  dependencies:
+    - build 
+  only:
+    - master 
+
+deploy: 
+  stage: deploy 
+  image: ruby:latest 
+  before_script:
+    - gem install dpl 
+  script: 
+    - dpl --provider=heroku --app=$HEROKU_APP --api-key=$HEROKU_API_KEY
+  dependencies:
+    - test
+  only: 
+    - master 
